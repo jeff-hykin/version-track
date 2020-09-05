@@ -9,35 +9,35 @@
         {
           "platform": "darwin",
           "executables": {
-            "git": "git version 2.27.0",
-            "python": "Python 3.7.7"
+            "node": "v12.18.3",
+            "npm": "6.14.6"
           }
         }
       ]
     },
     "track": [
       {
-        "name": "git",
-        "versionCommand": "git --version"
+        "name": "node",
+        "versionCommand": "node --version"
       },
       {
-        "name": "python",
-        "versionCommand": "python -V"
+        "name": "npm",
+        "versionCommand": "npm -v"
       }
     ]
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node ./index.js generate"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jeff-hykin/version-track.git"
+    "url": "git+https://github.com/jeff-hykin/version-tracker.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/jeff-hykin/version-track/issues"
+    "url": "https://github.com/jeff-hykin/version-tracker/issues"
   },
-  "homepage": "https://github.com/jeff-hykin/version-track#readme"
+  "homepage": "https://github.com/jeff-hykin/version-tracker#readme"
 }

@@ -28,15 +28,15 @@ Then inside your `package.json`, add the "versionTracker" as seen below
 }
 ```
 
-Whenever you've finished testing, run the version tracker.
-Which can be done like this:
-```js
-let { generatePackageJsonWithTracking } = require("version-tracker")
-generatePackageJsonWithTracking()
-```
+Whenever you've finished testing a version of your project, run the version tracker.
 You can also run it in the commandline as:
 ```
 npx version-tracker generate
+```
+Or also inside of a `.js` file it can be done like this:
+```js
+let { generatePackageJsonWithTracking } = require("version-tracker")
+generatePackageJsonWithTracking()
 ```
 
 After the generator is done, your package.json will contain something similar to the following.
