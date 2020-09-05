@@ -1,0 +1,43 @@
+{
+  "name": "version-tracker",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "versionTracker": {
+    "successfulBuilds": {
+      "0.0.1": [
+        {
+          "platform": "darwin",
+          "executables": {
+            "git": "git version 2.27.0",
+            "python": "Python 3.7.7"
+          }
+        }
+      ]
+    },
+    "track": [
+      {
+        "name": "git",
+        "versionCommand": "git --version"
+      },
+      {
+        "name": "python",
+        "versionCommand": "python -V"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeff-hykin/version-track.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jeff-hykin/version-track/issues"
+  },
+  "homepage": "https://github.com/jeff-hykin/version-track#readme"
+}
