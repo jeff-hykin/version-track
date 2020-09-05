@@ -1,8 +1,22 @@
 {
   "name": "version-tracker",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
+  "scripts": {
+    "test": "node ./index.js generate"
+  },
+  "keywords": [
+      "version",
+      "tracker",
+      "track"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jeff-hykin/version-tracker/issues"
+  },
+  "homepage": "https://github.com/jeff-hykin/version-tracker#readme",
   "versionTracker": {
     "successfulBuilds": {
       "0.0.1": [
@@ -26,18 +40,11 @@
       }
     ]
   },
-  "scripts": {
-    "test": "node ./index.js generate"
+  "bin": {
+    "version-tracker": "./index.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jeff-hykin/version-tracker.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/jeff-hykin/version-tracker/issues"
-  },
-  "homepage": "https://github.com/jeff-hykin/version-tracker#readme"
+  }
 }
