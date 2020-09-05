@@ -32,11 +32,13 @@ Whenever you've finished testing a version of your project, run the version trac
 You can also run it in the commandline as:
 ```
 npx version-tracker generate
+# also: npx version-tracker generate 4 # will use an indent of 4 instead of 2
 ```
 Or also inside of a `.js` file it can be done like this:
 ```js
 let { generatePackageJsonWithTracking } = require("version-tracker")
 generatePackageJsonWithTracking()
+// generatePackageJsonWithTracking(4) // will use an indent of 4 instead of 2
 ```
 
 After the generator is done, your package.json will contain something similar to the following.
