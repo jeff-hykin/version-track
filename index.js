@@ -174,8 +174,11 @@ module.exports = {
 if (process.argv[2] == "generate") {
     let indent = 2
     if (process.argv[3]) {
-        // if a number and not NaN
-        if ((process.argv[3]-0) == (process.argv[3]-0)) {
+        let asNumber = process.argv[3]-0
+        // if a real number and not NaN
+        if (asNumber == asNumber) {
+            indent = asNumber
+        } else {
             indent = process.argv[3]
         }
     }
