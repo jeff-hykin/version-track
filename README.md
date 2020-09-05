@@ -17,11 +17,11 @@ Then inside your `package.json`, add the "versionTracker" as seen below
         "track": [
             {
                 "name": "git",
-                "versionCommand": "git --version"
+                "versionCommand": ["git", "--version"]
             },
             {
                 "name": "python",
-                "versionCommand": "python -V"
+                "versionCommand": [ "python", "-V" ]
             }
         ]
     }
@@ -61,11 +61,11 @@ After the generator is done, your package.json will contain something similar to
     "track": [
       {
         "name": "git",
-        "versionCommand": "git --version"
+        "versionCommand": ["git", "--version"]
       },
       {
         "name": "python",
-        "versionCommand": "python -V"
+        "versionCommand": [ "python", "-V" ]
       }
     ]
   }

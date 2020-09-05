@@ -1,17 +1,17 @@
 {
   "name": "version-tracker",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "node ./index.js generate"
   },
   "keywords": [
-      "version",
-      "tracker",
-      "track"
+    "version",
+    "tracker",
+    "track"
   ],
-  "author": "",
+  "author": "Jeff Hykin",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/jeff-hykin/version-tracker/issues"
@@ -19,7 +19,7 @@
   "homepage": "https://github.com/jeff-hykin/version-tracker#readme",
   "versionTracker": {
     "successfulBuilds": {
-      "0.0.1": [
+      "1.1.0": [
         {
           "platform": "darwin",
           "executables": {
@@ -32,11 +32,17 @@
     "track": [
       {
         "name": "node",
-        "versionCommand": "node --version"
+        "versionCommand": [
+          "node",
+          "--version"
+        ]
       },
       {
         "name": "npm",
-        "versionCommand": "npm -v"
+        "versionCommand": [
+          "npm",
+          "-v"
+        ]
       }
     ]
   },
