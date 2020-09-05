@@ -29,11 +29,16 @@ const { execSync } = require('child_process')
 function getUpdatedPackageObject(packageJson) {
     // create a copy to prevent mutation
     packageJson = JSON.parse(JSON.stringify(packageJson))
+    let defaultTrackingInfo = [
+        { name: "node", versionCommand: "node --version" },
+        { name: "npm" , versionCommand: "npm -v"         },
+        { name: "git" , versionCommand: "git --version"  },
+    ]
     // make sure the versionTracker exists in the package json
-    if (!(packageJson.versionTracker                  instanceof Object)) { packageJson.versionTracker                  = {}      }
-    if (!(packageJson.versionTracker.successfulBuilds instanceof Object)) { packageJson.versionTracker.successfulBuilds = {}      }
-    if (!(packageJson.versionTracker.track            instanceof Array )) { packageJson.versionTracker.track            = []      }
-    if (typeof packageJson.version != 'string'                          ) { packageJson.version                         = "0.0.0" }
+    if (!(packageJson.versionTracker                  instanceof Object)) { packageJson.versionTracker                  = {}                  }
+    if (!(packageJson.versionTracker.successfulBuilds instanceof Object)) { packageJson.versionTracker.successfulBuilds = {}                  }
+    if (!(packageJson.versionTracker.track            instanceof Array )) { packageJson.versionTracker.track            = defaultTrackingInfo }
+    if (typeof packageJson.version != 'string'                          ) { packageJson.version                         = "0.0.0"             }
     
     // create a spot for the current version if needed 
     let projectVersion = packageJson.version
