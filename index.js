@@ -103,6 +103,7 @@ function getUpdatedPackageObject(packageJson) {
  *
  * @param {string} indent - this is passed to JSON.stringify() for picking the indent level
  * @param {string} packageJsonPath - optional, specific package.json instead of closest one
+ * @param {string} pathToLog - optional, path for saving the successfulBuilds in a seperate file
  * @return {undefined}
  *
  * @example
@@ -111,12 +112,19 @@ function getUpdatedPackageObject(packageJson) {
  * // indent with 4 spaces 
  * generatePackageJsonWithTracking(4)
  * // picking a specific json file
- * generatePackageJsonWithTracking(2, "./someFolder/package.json")
+ * generatePackageJsonWithTracking(2,"./someFolder/package.json")
+ * // picking a specific json file and log file
+ * generatePackageJsonWithTracking(2,"./someFolder/package.json", "versions-log.json")
+ * 
  */
-function generatePackageJsonWithTracking(indent=2, packageJsonPath) {
+function generatePackageJsonWithTracking(indent=2, packageJsonPath, pathToLog) {
     // if none given try to find one
     if (!packageJsonPath) {
         packageJsonPath = getPackageJsonPath()
+    }
+    // if not given log, use the packageJson path 
+    if (!pathToLog) {
+        pathToLog = packageJsonPath
     }
     // if package.json doesn't exist, then create one
     if (!packageJsonPath) {
@@ -155,6 +163,15 @@ function generatePackageJsonWithTracking(indent=2, packageJsonPath) {
     let packageJson = require(packageJsonPath)
     
     packageJson = getUpdatedPackageObject(packageJson)
+    // if log is in a different file, then extract the successfulBuilds
+    if (packageJsonPath != pathToLog) {
+        let successfulBuildLog = packageJson.versionTracker.successfulBuilds
+        delete packageJson.versionTracker.successfulBuilds
+        if (existsSync(pathToLog)) {
+            successfulBuildLog = Object.assign(successfulBuildLog, require(pathToLog)) 
+        }
+        writeFileSync(pathToLog, JSON.stringify(successfulBuildLog, 0, indent))
+    }
 
     return writeFileSync(packageJsonPath, JSON.stringify(packageJson, 0, indent))
 }

@@ -1,6 +1,6 @@
 {
   "name": "version-tracker",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -18,17 +18,6 @@
   },
   "homepage": "https://github.com/jeff-hykin/version-tracker#readme",
   "versionTracker": {
-    "successfulBuilds": {
-      "1.1.0": [
-        {
-          "platform": "darwin",
-          "executables": {
-            "node": "v12.18.3",
-            "npm": "6.14.6"
-          }
-        }
-      ]
-    },
     "track": [
       {
         "name": "node",
