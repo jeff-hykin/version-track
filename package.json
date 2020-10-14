@@ -1,6 +1,6 @@
 {
   "name": "version-tracker",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,16 +21,20 @@
     "track": [
       {
         "name": "node",
-        "versionCommand": [
-          "node",
-          "--version"
+        "versionCommands": [
+          [
+            "node",
+            "--version"
+          ]
         ]
       },
       {
         "name": "npm",
-        "versionCommand": [
-          "npm",
-          "-v"
+        "versionCommands": [
+          [
+            "npm",
+            "-v"
+          ]
         ]
       }
     ]

@@ -19,7 +19,9 @@ const { spawnSync } = require('child_process')
  *     "track": [
  *         {
  *             "name": "git",
- *             "versionCommand": ["git", "--version"]
+ *             "versionCommands": [
+ *                 ["git", "--version"]
+ *             ]
  *         }
  *     ]
  *   }
@@ -30,9 +32,9 @@ function getUpdatedPackageObject(packageJson) {
     // create a copy to prevent mutation
     packageJson = JSON.parse(JSON.stringify(packageJson))
     let defaultTrackingInfo = [
-        { name: "node", versionCommand: ["node", "--version"] },
-        { name: "npm" , versionCommand: ["npm", "-v"        ] },
-        { name: "git" , versionCommand: ["git", "--version" ] },
+        { name: "node", versionCommands: [["node", "--version"]] },
+        { name: "npm" , versionCommands: [["npm", "-v"        ]] },
+        { name: "git" , versionCommands: [["git", "--version" ]] },
     ]
     // make sure the versionTracker exists in the package json
     if (!(packageJson.versionTracker                  instanceof Object)) { packageJson.versionTracker                  = {}                  }
@@ -53,25 +55,32 @@ function getUpdatedPackageObject(packageJson) {
     // add all the versions
     for (let eachTrackable of packageJson.versionTracker.track) {
         versionEntry.executables[eachTrackable.name] = null
-        try {
-            if (eachTrackable.versionCommand instanceof Array) {
-                let [ command, ...args ] = eachTrackable.versionCommand
-                let result = spawnSync(command, args)
-                let output = ""
-                if (result.stdout) {
-                    output += result.stdout.toString().trim()
-                }
-                if (result.stderr) {
-                    output += result.stderr.toString().trim()
-                }
-                if (output.length > 0) {
-                    // remove all the ANSI escape codes (colors)
-                    output = output.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "")
-                    // save the version
-                    versionEntry.executables[eachTrackable.name] = output
+        if (eachTrackable.versionCommands instanceof Array) {
+            for (let eachCommand of eachTrackable.versionCommands) {
+                if (eachCommand.versionCommands instanceof Array) {
+                    let [ command, ...args ] = eachCommand
+                    let result = spawnSync(command, args)
+                    // if not successful then try the next command
+                    if (result.status != 0) {
+                        continue
+                    }
+                    // otherwise, use the output as the version
+                    let output = ""
+                    if (result.stdout) {
+                        output += result.stdout.toString().trim()
+                    }
+                    if (result.stderr) {
+                        output += result.stderr.toString().trim()
+                    }
+                    if (output.length > 0) {
+                        // remove all the ANSI escape codes (colors)
+                        output = output.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, "")
+                        // save the version
+                        versionEntry.executables[eachTrackable.name] = output
+                    }
                 }
             }
-        } catch (error) {}
+            }
     }
 
     // add it to the version history if its not already there
@@ -148,11 +157,11 @@ function generatePackageJsonWithTracking(indent=2, packageJsonPath, pathToLog) {
             `    "track": [\n`+
             `      {\n`+
             `        "name": "node",\n`+
-            `        "versionCommand": ["node", "-v"]\n`+
+            `        "versionCommands": [ ["node", "-v"] ]\n`+
             `      },\n`+
             `      {\n`+
             `        "name": "npm",\n`+
-            `        "versionCommand": ["npm", "-v"]\n`+
+            `        "versionCommands": [ ["npm", "-v"] ]\n`+
             `      },\n`+
             `    ]\n`+
             `  },\n`+
