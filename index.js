@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const path = require("path")
-const { existsSync, writeFileSync } = require("fs")
+const { existsSync, writeFileSync, readFileSync } = require("fs")
 const { spawnSync } = require('child_process')
 
 /**
@@ -160,7 +160,7 @@ function generatePackageJsonWithTracking(indent=2, packageJsonPath, pathToLog) {
         )
     }
     // fails if packageJson is poorly formatted
-    let packageJson = require(packageJsonPath)
+    let packageJson = JSON.parse(readFileSync(packageJsonPath))
     
     packageJson = getUpdatedPackageObject(packageJson)
     // if log is in a different file, then extract the successfulBuilds
@@ -168,7 +168,7 @@ function generatePackageJsonWithTracking(indent=2, packageJsonPath, pathToLog) {
         let successfulBuildLog = packageJson.versionTracker.successfulBuilds
         delete packageJson.versionTracker.successfulBuilds
         if (existsSync(pathToLog)) {
-            successfulBuildLog = Object.assign(successfulBuildLog, require(pathToLog)) 
+            successfulBuildLog = Object.assign(successfulBuildLog, JSON.parse(readFileSync(pathToLog))) 
         }
         writeFileSync(pathToLog, JSON.stringify(successfulBuildLog, 0, indent))
     }
@@ -215,6 +215,6 @@ if (process.argv[2] == "generate") {
         }
     }
     console.log(`generating tracking information`)
-    generatePackageJsonWithTracking(indent)
+    generatePackageJsonWithTracking(indent, "./package.json", "./version-log.json")
     console.log(`package information generated!`)
 }
