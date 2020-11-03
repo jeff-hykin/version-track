@@ -180,7 +180,6 @@ function generatePackageJsonWithTracking({indent=2, source, log}) {
         }
     }
     logData || (logData = {})
-    console.debug(`logData is:`,logData)
 
     let {newSource, newLog} = getUpdatedPackageObject({source: packageJson, log: logData})
     // if log is in a different file, then extract the successfulBuilds
