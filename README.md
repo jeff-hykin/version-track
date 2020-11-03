@@ -32,7 +32,9 @@ Whenever you've finished testing a version of your project, run the version trac
 You can also run it in the commandline as:
 ```
 npx version-tracker generate
-# also: npx version-tracker generate 4 # will use an indent of 4 instead of 2
+# also: npx version-tracker generate --indent 4
+# also: npx version-tracker generate --source package.json
+# also: npx version-tracker generate --log version-log.json
 ```
 Or also inside of a `.js` file it can be done like this:
 ```js

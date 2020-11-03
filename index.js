@@ -28,36 +28,35 @@ const { spawnSync } = require('child_process')
  * })
  * 
  */
-function getUpdatedPackageObject(packageJson) {
+function getUpdatedPackageObject({source, log}) {
     // create a copy to prevent mutation
-    packageJson = JSON.parse(JSON.stringify(packageJson))
+    source = JSON.parse(JSON.stringify(source))
     let defaultTrackingInfo = [
         { name: "node", versionCommands: [["node", "--version"]] },
         { name: "npm" , versionCommands: [["npm", "-v"        ]] },
         { name: "git" , versionCommands: [["git", "--version" ]] },
     ]
     // make sure the versionTracker exists in the package json
-    if (!(packageJson.versionTracker                  instanceof Object)) { packageJson.versionTracker                  = {}                  }
-    if (!(packageJson.versionTracker.successfulBuilds instanceof Object)) { packageJson.versionTracker.successfulBuilds = {}                  }
-    if (!(packageJson.versionTracker.track            instanceof Array )) { packageJson.versionTracker.track            = defaultTrackingInfo }
-    if (typeof packageJson.version != 'string'                          ) { packageJson.version                         = "0.0.0"             }
+    if (!(source.versionTracker                  instanceof Object)) { source.versionTracker                  = {}                  }
+    if (!(source.versionTracker.successfulBuilds instanceof Object)) { source.versionTracker.successfulBuilds = {}                  }
+    if (!(source.versionTracker.track            instanceof Array )) { source.versionTracker.track            = defaultTrackingInfo }
+    if (typeof source.version != 'string'                          ) { source.version                         = "0.0.0"             }
     
     // create a spot for the current version if needed 
-    let projectVersion = packageJson.version
-    if (!(packageJson.versionTracker.successfulBuilds[projectVersion] instanceof Array)) { packageJson.versionTracker.successfulBuilds[projectVersion] = [] }
+    let projectVersion = source.version
+    if (!(source.versionTracker.successfulBuilds[projectVersion] instanceof Array)) { source.versionTracker.successfulBuilds[projectVersion] = [] }
 
     // retrive the current versions of everything
     let versionEntry = {
         platform: process.platform,
         executables: {}
     }
-    
     // add all the versions
-    for (let eachTrackable of packageJson.versionTracker.track) {
+    for (let eachTrackable of source.versionTracker.track) {
         versionEntry.executables[eachTrackable.name] = null
         if (eachTrackable.versionCommands instanceof Array) {
             for (let eachCommand of eachTrackable.versionCommands) {
-                if (eachCommand.versionCommands instanceof Array) {
+                if (eachCommand instanceof Array) {
                     let [ command, ...args ] = eachCommand
                     let result = spawnSync(command, args)
                     // if not successful then try the next command
@@ -83,64 +82,63 @@ function getUpdatedPackageObject(packageJson) {
             }
     }
 
+    
     // add it to the version history if its not already there
     const entryAsString = JSON.stringify(versionEntry)
-    const entriesAsStrings = packageJson.versionTracker.successfulBuilds[projectVersion].map(each=>JSON.stringify(each))
+    let successfulBuilds = {...log}
+    successfulBuilds[projectVersion]||(successfulBuilds[projectVersion]=[])
+    const entriesAsStrings = successfulBuilds[projectVersion].map(each=>JSON.stringify(each))
     if (!entriesAsStrings.includes(entryAsString)) {
         // reorganize so that latest are on top
-        let currentVerisonEntries = packageJson.versionTracker.successfulBuilds[projectVersion]
+        let currentVerisonEntries = successfulBuilds[projectVersion]
         // insert at front
         currentVerisonEntries.unshift(versionEntry)
-        delete packageJson.versionTracker.successfulBuilds[projectVersion]
-        packageJson.versionTracker.successfulBuilds = {
+        delete successfulBuilds[projectVersion]
+        successfulBuilds = {
             // most recent
             [projectVersion]: currentVerisonEntries,
             // all the older builds
-            ...packageJson.versionTracker.successfulBuilds
+            ...successfulBuilds
         }
     }
     // reorder the versions so that newest is on top
-    packageJson.versionTracker.successfulBuilds = {
-        [projectVersion]: packageJson.versionTracker.successfulBuilds[projectVersion],
-        ...packageJson.versionTracker.successfulBuilds
+    successfulBuilds = {
+        [projectVersion]: successfulBuilds[projectVersion],
+        ...successfulBuilds
     }
-    return packageJson
+    return {newSource: source, newLog: successfulBuilds}
 }
 
 /**
  * Adds to (or creates) package.json with version tracking
  *
- * @param {string} indent - this is passed to JSON.stringify() for picking the indent level
- * @param {string} packageJsonPath - optional, specific package.json instead of closest one
- * @param {string} pathToLog - optional, path for saving the successfulBuilds in a seperate file
+ * @param {string} obj.indent - this is passed to JSON.stringify() for picking the indent level
+ * @param {string} obj.source - optional, specific package.json instead of closest one
+ * @param {string} obj.log - optional, path for saving the successfulBuilds in a seperate file
  * @return {undefined}
  *
  * @example
  * // no args needed
  * generatePackageJsonWithTracking()
  * // indent with 4 spaces 
- * generatePackageJsonWithTracking(4)
+ * generatePackageJsonWithTracking({indent: 4})
  * // picking a specific json file
- * generatePackageJsonWithTracking(2,"./someFolder/package.json")
+ * generatePackageJsonWithTracking({indent: 2, source:"./someFolder/package.json"})
  * // picking a specific json file and log file
- * generatePackageJsonWithTracking(2,"./someFolder/package.json", "versions-log.json")
+ * generatePackageJsonWithTracking({indent:2, source:"./someFolder/package.json", log:"versions-log.json"})
  * 
  */
-function generatePackageJsonWithTracking(indent=2, packageJsonPath, pathToLog) {
+function generatePackageJsonWithTracking({indent=2, source, log}) {
     // if none given try to find one
-    if (!packageJsonPath) {
-        packageJsonPath = getPackageJsonPath()
-    }
-    // if not given log, use the packageJson path 
-    if (!pathToLog) {
-        pathToLog = packageJsonPath
+    if (!source) {
+        source = getPathToPackageJson()
     }
     // if package.json doesn't exist, then create one
-    if (!packageJsonPath) {
-        packageJsonPath = path.join(process.cwd(), "package.json")
+    if (!existsSync(source)) {
+        source = path.join(process.cwd(), "package.json")
         console.log(`Couldn't find a package.json\nCreating a skeleton package.json so versionTracker can function`)
         writeFileSync(
-            packageJsonPath, 
+            source, 
             // create a package.json similar to a version of npm init -y
             `{\n`+
             `  "name": "",\n`+
@@ -169,20 +167,29 @@ function generatePackageJsonWithTracking(indent=2, packageJsonPath, pathToLog) {
         )
     }
     // fails if packageJson is poorly formatted
-    let packageJson = JSON.parse(readFileSync(packageJsonPath))
-    
-    packageJson = getUpdatedPackageObject(packageJson)
-    // if log is in a different file, then extract the successfulBuilds
-    if (packageJsonPath != pathToLog) {
-        let successfulBuildLog = packageJson.versionTracker.successfulBuilds
-        delete packageJson.versionTracker.successfulBuilds
-        if (existsSync(pathToLog)) {
-            successfulBuildLog = Object.assign(successfulBuildLog, JSON.parse(readFileSync(pathToLog))) 
+    let packageJson = JSON.parse(readFileSync(source))
+    let logData
+    // if not given log, use the packageJson path 
+    if (!log) {
+        logData = packageJson.versionTracker.successfulBuilds
+    } else {
+        if (existsSync(log)) {
+            try {
+                logData = JSON.parse(readFileSync(log))
+            } catch(e){}
         }
-        writeFileSync(pathToLog, JSON.stringify(successfulBuildLog, 0, indent))
     }
+    logData || (logData = {})
+    console.debug(`logData is:`,logData)
 
-    return writeFileSync(packageJsonPath, JSON.stringify(packageJson, 0, indent))
+    let {newSource, newLog} = getUpdatedPackageObject({source: packageJson, log: logData})
+    // if log is in a different file, then extract the successfulBuilds
+    if (source != log) {
+        return writeFileSync(log, JSON.stringify(newLog, 0, indent))
+    } else {
+        source.successfulBuilds = newLog
+        return writeFileSync(source, JSON.stringify(newSource, 0, indent))
+    }
 }
 
 function walkUp() {
@@ -195,12 +202,12 @@ function walkUp() {
     return output
 }
 
-function getPackageJsonPath() {
+function getPathToPackageJson() {
     // find the package.json
     for (let eachFolder of walkUp()) {
-        let packageJsonPath = path.join(eachFolder, "package.json")
-        if (existsSync(packageJsonPath)) {
-            return packageJsonPath
+        let source = path.join(eachFolder, "package.json")
+        if (existsSync(source)) {
+            return source
         }
     }
 }
@@ -214,16 +221,29 @@ module.exports = {
 // if run directly from the commandline
 if (process.argv[2] == "generate") {
     let indent = 2
-    if (process.argv[3]) {
-        let asNumber = process.argv[3]-0
-        // if a real number and not NaN
-        if (asNumber == asNumber) {
-            indent = asNumber
+    let logPath = "./version-log.json"
+    let source = "./package.json"
+    let args = [...process.argv.slice(3,process.argv)]
+    while (args.length > 0) {
+        let key = args.shift()
+        if (key == "--indent") {
+            indent = args.shift()
+        } else if (key == "--source") {
+            source = args.shift()
+        } else if (key == "--log") {
+            logPath = args.shift()
         } else {
-            indent = process.argv[3]
+            console.error(`invalid argument '${key}', should be:\n--indent\n--source\n--log\n`)
         }
     }
+    // convert the indent
+    let asNumber = indent-0
+    // if a real number and not NaN
+    if (asNumber == asNumber) {
+        indent = asNumber
+    }
+
     console.log(`generating tracking information`)
-    generatePackageJsonWithTracking(indent, "./package.json", "./version-log.json")
+    generatePackageJsonWithTracking({indent, source, log:logPath})
     console.log(`package information generated!`)
 }
